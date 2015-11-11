@@ -2,6 +2,7 @@
 
 import tornado.ioloop
 import tornado.web
+import basic_auth
 
 class Application(tornado.web.Application):
 	def __init__(self):
@@ -12,12 +13,19 @@ class Application(tornado.web.Application):
 
 		tornado.web.Application.__init__(self,handlers)
 
+def check_credentials(user, pwd):
+	return user == 'foo'
+def hello_fun(handler, kwargs, user, pwd):
+	handler.write("Hello ")
+	return
 
+@basic_auth.basic_auth(check_credentials, hello_fun)
 class MainHandler(tornado.web.RequestHandler):
-	def get(self):
-		self.write("Hello, world")
-	def data_received(self, chunk):
-		print("chunk")
+	pass
+#	def get(self):
+#		self.write("Hello, world")
+#	def data_received(self, chunk):
+#		print("chunk")
 
 class TestHandler(tornado.web.RequestHandler):
 	def __init__(self, application, request, **kwargs):
