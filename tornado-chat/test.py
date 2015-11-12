@@ -10,29 +10,29 @@ class Application(tornado.web.Application):
 			(r'/',MainHandler),
 			(r'/test',TestHandler),
 		]
-
 		tornado.web.Application.__init__(self,handlers)
 
+
+
 def check_credentials(user, pwd):
-	return user == 'foo'
+	return True #user == 'foo'
+
 def hello_fun(handler, kwargs, user, pwd):
-	handler.write("Hello ")
+	print(user)
+	handler.current_user = user
 	return
 
 @basic_auth.basic_auth(check_credentials, hello_fun)
 class MainHandler(tornado.web.RequestHandler):
-	pass
-#	def get(self):
-#		self.write("Hello, world")
-#	def data_received(self, chunk):
-#		print("chunk")
+	def get(self):
+		name = tornado.escape.xhtml_escape(self.current_user)
+		self.write("Hello " + name )
 
 class TestHandler(tornado.web.RequestHandler):
 	def __init__(self, application, request, **kwargs):
 		tornado.web.RequestHandler.__init__(self, application, request, **kwargs)
 		self.stream = None
 
-	@tornado.web.asynchronous
 	def get(self):
 		print("La-La-La")
 		self.stream = self.request.connection.detach()
