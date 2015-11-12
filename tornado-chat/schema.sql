@@ -1,0 +1,13 @@
+SET SESSION storage_engine = "InnoDB";
+SET SESSION time_zone = "+0:00";
+ALTER DATABASE CHARACTER SET "utf8";
+
+DROP TABLE IF EXISTS sensors;
+CREATE TABLE sensors (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	token VARCHAR(100) NOT NULL UNIQUE,
+    device_id VARCHAR(100) NOT NULL UNIQUE,
+    device_key VARCHAR(100) NOT NULL,
+    updated TIMESTAMP NOT NULL
+);
+

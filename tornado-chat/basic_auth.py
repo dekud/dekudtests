@@ -18,7 +18,7 @@ def basic_auth(auth_func=lambda *args, **kwargs: True, after_login_func=lambda *
                     auth_decoded = base64.decodestring(auth_header[6:])
                     user, pwd = auth_decoded.split(':', 2)
 
-                    if auth_func(user, pwd):
+                    if auth_func(handler, user, pwd):
                         print "auth ok"
                         after_login_func(handler, kwargs, user, pwd)
                     else:
