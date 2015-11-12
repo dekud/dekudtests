@@ -1,0 +1,19 @@
+{"req": "ST", "v": 1, "req_id": "0x0001", "arg": {"tm": "2015-09-21T15:43:49.000+0000", "cmd": "0x01"}}
+{"req_answ": "ST", "v": 1, "req_id": "0x0001", "err_code": "0x00"}
+
+{"req_answ": "ST", "v": 1, "req_id": "0x0002", "err_code": "0x00"}
+
+{"req_answ": "ST", "v": 1, "req_id": "0x0004", "err_code": "0x00","arg":{"tm":"51006103015"}}
+
+{"req": "PING", "v": 1, "req_id": "0x0666", "arg": {}}
+
+GET /sensors/v1/test-endpoint?type=argus-controller&id=0x00000000010203AB&token=547d242090217b564f078648c05bbeb4 HTTP/1.1
+Format: LineFeed
+
+{"req_answ":"ST","req_id":"0x0001","err_code":"0x00","arg":{"tm":"51007132245"}}
+
+sensors.api.ivideon.com
+
+
+GET /sensors/v1/0x00000000010203AB HTTP/1.1
+Authorization: Basic MHgwMDAwMDAwMDAxMDIwM0FCOjB4MTIzNDU2Nzg5MEFCQ0RFRg==
