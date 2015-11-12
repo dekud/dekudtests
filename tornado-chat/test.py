@@ -9,6 +9,7 @@ class Application(tornado.web.Application):
 		handlers = [
 			(r'/',MainHandler),
 			(r'/test',TestHandler),
+			(r'/sensors/v1/([^/]*)',SensorsHandler),
 		]
 		tornado.web.Application.__init__(self,handlers)
 
@@ -28,11 +29,20 @@ class MainHandler(tornado.web.RequestHandler):
 		name = tornado.escape.xhtml_escape(self.current_user)
 		self.write("Hello " + name )
 
+@basic_auth.basic_auth(check_credentials, hello_fun)
+class SensorsHandler(tornado.web.RequestHandler):
+	def get(self, t):
+		print(t)
+		name = tornado.escape.xhtml_escape(self.current_user)
+		#self.write("Hello " + name )
+		self.redirect('/test')
+
 class TestHandler(tornado.web.RequestHandler):
 	def __init__(self, application, request, **kwargs):
 		tornado.web.RequestHandler.__init__(self, application, request, **kwargs)
 		self.stream = None
 
+	@tornado.web.asynchronous
 	def get(self):
 		print("La-La-La")
 		self.stream = self.request.connection.detach()
