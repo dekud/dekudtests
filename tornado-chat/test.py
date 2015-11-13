@@ -33,10 +33,13 @@ class Application(tornado.web.Application):
 
 def check_credentials(handler, user, pwd):
 	print user
+	print pwd
 	str = "SELECT * from sensors where device_id='"+user+"';"
 	print(str)
 	sensor = handler.application.db.query(str)
 	print sensor
+	if not sensor:
+		return False
 	if sensor[0].device_key == pwd:
 		handler.token = sensor[0].token
 		return True
