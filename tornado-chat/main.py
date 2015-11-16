@@ -60,14 +60,39 @@ class JsonHandler(jot_handler.JoTHandler):
 		self.write_message(jparser.get_result())
 
 	def on_close(self):
+		strq = "INSERT INTO events (sensor_id, datetime, text, json) VALUES("+str(self.sid)+", NOW(), 'Close connection', '{}');"
+		self.application.db.execute(strq)
 		print('close')
+
+	def validate(self):
+		try:
+			_id = self.get_argument('id')
+			_type = self.get_argument('type')
+			_token = self.get_argument('token')
+			print {_id, _type, _token }
+			strq = "SELECT * from sensors where device_id='"+_id+"';"
+			sensor = self.application.db.query(strq)
+		except:
+			return False
+			print sensor[0]
+		if not sensor:
+			return False
+		if _id != sensor[0].device_id or _type != 'argus-controller' or _token != sensor[0].token:
+			return False
+		#return True
+		self.sid = int(sensor[0].id)
+		strq = "INSERT INTO events (sensor_id, datetime, text, json) VALUES("+str(self.sid)+", NOW(), 'Connect', '{}');"
+		print strq
+		self.application.db.execute(strq)
+		return True
+
 
 class Application(tornado.web.Application):
 	def __init__(self):
 		handlers = [
 			(r'/',MainHandler),
 			(r'/sensors/v1/test-endpoint/?',JsonHandler),
-			(r'/sensors/v1/([^/]*)',SensorsHandler),
+			(r'/sensors/v1/([0-9,a-f,A-F,x]*)',SensorsHandler),
 		]
 		tornado.web.Application.__init__(self,handlers)
 		
