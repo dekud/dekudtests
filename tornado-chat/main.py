@@ -9,6 +9,7 @@ import jot_handler
 import tornado.options
 import tornado.httpserver
 import os
+from  saggitarius_db import dbcontroller
 
 from tornado.options import define, options
 
@@ -21,14 +22,15 @@ define("mysql_password", default="user", help="database password")
 
 
 def check_credentials(handler, user, pwd):
-	print user
-	print pwd
-	str = "SELECT * from sensors where device_id='"+user+"';"
-	sensor = handler.application.db.query(str)
+	print("device_id: "+ user)
+	print("device_key: " + pwd)
+#	str = "SELECT * from sensors where device_id='"+user+"';"
+#	sensor = handler.application.db.query(str)
+	sensor = handler.application.db_cont.getSensorByDevId(user)
 	if not sensor:
 		return False
-	if sensor[0].device_key == pwd:
-		handler.token = sensor[0].token
+	if sensor.device_key == pwd:
+		handler.token = sensor.token
 		return True
 	else:
 		return False
@@ -51,40 +53,43 @@ class SensorsHandler(tornado.web.RequestHandler):
 
 		self.redirect('https://127.0.0.1/sensors/v1/test-endpoint?type=argus-controller&id='+device_id+'&token='+self.token )
 	def on_finish(self):
-		print "on close"
+		print "SensorsHandler on close"
 
 class JsonHandler(jot_handler.JoTHandler):
 	def on_message(self, message):
 		jparser = json_parser.JsonParser(message)
-		print message
-		self.write_message(jparser.get_result())
+		answer = jparser.get_result()
+		if jparser.isEventToDB:
+			self.application.db_cont.pushEvent(self.dev_id, jparser.events[0]);
+		print("json answer: " + answer)
+		self.write_message(answer)
 
 	def on_close(self):
-		strq = "INSERT INTO events (sensor_id, datetime, text, json) VALUES("+str(self.sid)+", NOW(), 'Close connection', '{}');"
-		self.application.db.execute(strq)
-		print('close')
+		#strq = "INSERT INTO events (sensor_id, datetime, text, json) VALUES("+str(self.sid)+", NOW(), 'Close connection', '{}');"
+		#self.application.db.execute(strq)
+		self.application.db_cont.pushConnectionEvent(self.dev_id, self.request.remote_ip, 'Close connection')
+		print('JsonHandler close')
 
 	def validate(self):
+		print "JsonHandler validate:"
 		try:
-			_id = self.get_argument('id')
+			self.dev_id = self.get_argument('id')
 			_type = self.get_argument('type')
 			_token = self.get_argument('token')
-			print {_id, _type, _token }
-			strq = "SELECT * from sensors where device_id='"+_id+"';"
-			sensor = self.application.db.query(strq)
+			print self.dev_id
+			sensor = self.application.db_cont.getSensorByDevId(self.dev_id)
 		except:
 			return False
-			print sensor[0]
+
 		if not sensor:
 			return False
-		if _id != sensor[0].device_id or _type != 'argus-controller' or _token != sensor[0].token:
+		if _type != 'argus-controller' or _token != sensor.token:
 			return False
-		#return True
-		self.sid = int(sensor[0].id)
-		strq = "INSERT INTO events (sensor_id, datetime, text, json) VALUES("+str(self.sid)+", NOW(), 'Connect', '{}');"
-		print strq
-		self.application.db.execute(strq)
+
+		print self.request.remote_ip
+		self.application.db_cont.pushConnectionEvent(self.dev_id, self.request.remote_ip, 'Open connection')
 		return True
+
 
 
 class Application(tornado.web.Application):
@@ -96,12 +101,15 @@ class Application(tornado.web.Application):
 		]
 		tornado.web.Application.__init__(self,handlers)
 		
-		self.db = torndb.Connection(
-				host=options.mysql_host, database=options.mysql_database,
-				user=options.mysql_user, password=options.mysql_password)
-		for sensor in self.db.query("SELECT * from sensors"):
-			print sensor
+#		self.db = torndb.Connection(
+#				host=options.mysql_host, database=options.mysql_database,
+#				user=options.mysql_user, password=options.mysql_password)
 
+		self.db_cont = dbcontroller(
+					options.mysql_host, options.mysql_database,
+					options.mysql_user, options.mysql_password)
+
+		
 if __name__ == "__main__":
 	app = Application()
 	#app.listen(8888)

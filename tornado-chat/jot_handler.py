@@ -37,7 +37,6 @@ class JoTHandler(tornado.web.RequestHandler):
 		if not self.validate():
 			raise tornado.web.HTTPError(400)
 		print("Argus-JoT")
-		print(self.request)
 		self.stream = self.request.connection.detach()
 		self.stream.set_close_callback(self._on_connection_close)
 		try:
