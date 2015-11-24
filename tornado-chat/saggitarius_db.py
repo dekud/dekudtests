@@ -25,15 +25,15 @@ class dbcontroller:
 		messages = []
 		for ev in reversed(events):
 			lt = ev.datetime + datetime.timedelta(hours = 3)
-			print lt 
 			qs = "SELECT * from eventtypes where event_type = " + str(ev.event_type) + ";"
 			etexts = self.db.get(qs)
 			user_str = 'T' + hex(ev.dev_type) +'['+ str(ev.dev_number)+']'
 			mm = {'user': user_str, 'text' : ' '}
 			if ev.event_flag == 1:
-				mm['text'] = str(lt) + ": " + etexts.new
+				mm['text'] = etexts.new
 			else:
-				mm['text'] = str(lt) + ": " + etexts.restore
+				mm['text'] = etexts.restore
+			mm['datetime'] = str(lt)
 			messages.append(mm)
 		return messages
 				

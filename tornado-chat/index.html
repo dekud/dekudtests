@@ -6,28 +6,41 @@
         <title>Tornado Chat</title>
         <link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap.min.css">
         <link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap-responsive.min.css">
-        <link rel="stylesheet" href="/static/css/style.css">
+        <link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap-theme.min.css">
+		<link rel="stylesheet" href="/static/css/style.css">
 
         <script src="/static/js/jquery-1.9.1.min.js"></script>
-        <script src="/static/js/underscore.js"></script>
+        <!--<script src="/static/js/underscore.js"></script>-->
         <script src="/static/lib/bootstrap/js/bootstrap.min.js"></script>
-        <script src="/static/js/main.js"></script>
+        <!--<script src="/static/js/main.js"></script> -->
     </head>
     <body>
-        <div id="backbone-chat" class="container">
-            <h1>Cобытия Saggitarius</h1>
-            <div id="chat-messages" class="chat-messages well">
-                {% for message in messages %}
-                <div class="message">
-                    <address>{{ message['user'] }}</address><span>{{ message['text'] }}</span>
-                </div>
-                {% end %}
-            </div>
-        </div>
-        <!-- Templates -->
+	<div class="container">
+		<div id="chat-messages" class="panel panel-info">
+			<div class="panel-heading"><h3 class="panel-title">Cобытия Saggitarius</h3></div>
+			<div class="panel-body">
+				<table class="table table-striped">
+					<tr>
+					<th>Устройство</th>
+					<th>Событие</th>
+					<th>Время</th>
+					</tr>
+					{% for message in messages %}
+					<tr>
+					<td>{{ message['user'] }}</td>
+					<td>{{ message['text'] }}</td>
+					<td>{{ message['datetime'] }}</td>
+					</tr>
+					{% end %}
+					</table>
+                    <!--<address>{{ message['user'] }}</address><span>{{ message['text'] }}</span> -->
+			</div>
+		</div>
+	</div>
+        <!-- Templates 
         <script type="text/template" id="message-template">
             <address><%- user %></address><span><%- text %></span>
         </script>
-        <!-- /Templates -->
+         /Templates -->
     </body>
 </html>
