@@ -18,6 +18,22 @@ class dbcontroller:
 			return None
 		return sensor[0]
 
+	def getEvents(self):
+		strq = "SELECT * FROM events;"
+		events = self.db.query(strq)
+		messages = []
+		for ev in events:
+			qs = "SELECT * from eventtypes where event_type = " + str(ev.event_type) + ";"
+			etexts = self.db.get(qs)
+			user_str = 'T' + hex(ev.dev_type) +'['+ str(ev.dev_number)+']'
+			mm = {'user': user_str, 'text' : ' '}
+			if ev.event_flag == 1:
+				mm['text'] = str(ev.datetime) + ": " + etexts.new
+			else:
+				mm['text'] = str(ev.datetime) + ": " + etexts.restore
+			messages.append(mm)
+		return messages
+				
 
 	def pushConnectionEvent(self, device_id, ip_addr, text):
 		[sensor_id, object_id] = self._getSensorAndObjIdByDevId(device_id)
@@ -26,20 +42,6 @@ class dbcontroller:
 
 	def pushEvent(self, device_id, json_dict):
 		[sensor_id, object_id] = self._getSensorAndObjIdByDevId(device_id)
-#		strq = ("INSERT INTO events (sensor_id, object_id, datetime, dev_datetime,text,"
-#				"main_dev_category, main_dev_number,dev_category, dev_number, dev_type, t_object_category, t_objects) " 
-#				"VALUES(%s, %s, NOW(), %s,"
-#				"%s,%s, %s,"
-#				"%s,%s, %s," 
-#				"%s, %s);")
-		
-#		getEstr = "SELECT * from eventtypes where event_type="+json_dict.et+";"
-#		eventtext = self.db.get(getEstr)
-#		print eventtext
-#		if json_dict.ef == "0x01":
-#			text = eventtext.new
-#		else:
-#			text = eventtext.restore
 		strq_t = ("INSERT INTO events (sensor_id, object_id, datetime, dev_datetime, event_type, event_flag, "
 				"main_dev_category, main_dev_number,dev_category, dev_number, dev_type, t_object_category, t_objects) " 
 				"VALUES('{0}','{1}', NOW(), '{2}',"
@@ -60,11 +62,6 @@ class dbcontroller:
 								int(json_dict.toc, 0), strton) 
 
 		print strq
-#		self.db.execute(strq, sensor_id, device_id, json_dict.tm,
-#								text, json_dict.dc1, json_dict.dn1,
-#								json_dict.dc2, json_dict.dn2, json_dict.dt2,
-#								json_dict.toc, json_dict.ton 
-#								)
 		self.db.execute(strq)
 
 	def _getSensorAndObjIdByDevId(self, device_id):

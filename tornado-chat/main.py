@@ -39,11 +39,12 @@ def hello_fun(handler, kwargs, user, pwd):
 	handler.current_user = user
 	handler.current_pwd = pwd
 
-@basic_auth.basic_auth(check_credentials, hello_fun)
+#@basic_auth.basic_auth(check_credentials, hello_fun)
 class MainHandler(tornado.web.RequestHandler):
 	def get(self):
-		name = tornado.escape.xhtml_escape(self.current_user)
-		self.write("Hello " + name )
+		#name = tornado.escape.xhtml_escape(self.current_user)
+		messages = self.application.db_cont.getEvents()
+		self.render('index.html', messages=messages)
 
 @basic_auth.basic_auth(check_credentials, hello_fun)
 class SensorsHandler(tornado.web.RequestHandler):
@@ -98,6 +99,7 @@ class Application(tornado.web.Application):
 			(r'/',MainHandler),
 			(r'/sensors/v1/test-endpoint/?',JsonHandler),
 			(r'/sensors/v1/([0-9,a-f,A-F,x]*)',SensorsHandler),
+			(r'/static/(.*)', tornado.web.StaticFileHandler, {'path': 'static/'}),
 		]
 		tornado.web.Application.__init__(self,handlers)
 		
