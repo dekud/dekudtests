@@ -3,6 +3,7 @@
 
 import MySQLdb
 import torndb
+import datetime
 
 class dbcontroller:
 	def __init__(self ,_host, _name, _user, _password):
@@ -22,15 +23,17 @@ class dbcontroller:
 		strq = "SELECT * FROM events;"
 		events = self.db.query(strq)
 		messages = []
-		for ev in events:
+		for ev in reversed(events):
+			lt = ev.datetime + datetime.timedelta(hours = 3)
+			print lt 
 			qs = "SELECT * from eventtypes where event_type = " + str(ev.event_type) + ";"
 			etexts = self.db.get(qs)
 			user_str = 'T' + hex(ev.dev_type) +'['+ str(ev.dev_number)+']'
 			mm = {'user': user_str, 'text' : ' '}
 			if ev.event_flag == 1:
-				mm['text'] = str(ev.datetime) + ": " + etexts.new
+				mm['text'] = str(lt) + ": " + etexts.new
 			else:
-				mm['text'] = str(ev.datetime) + ": " + etexts.restore
+				mm['text'] = str(lt) + ": " + etexts.restore
 			messages.append(mm)
 		return messages
 				
