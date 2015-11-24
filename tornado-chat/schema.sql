@@ -21,8 +21,7 @@ CREATE TABLE connection_events (
 	ip VARCHAR(20)
 );
 
-DROP TABLE IF EXISTS objects;
-CREATE TABLE objects (
+CREATE TABLE IF NOT EXISTS objects (
 	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	name TEXT,
 	phone TEXT,
@@ -36,7 +35,8 @@ CREATE TABLE events (
 	object_id INT NOT NULL,
 	datetime TIMESTAMP NOT NULL,
 	dev_datetime VARCHAR(20),
-	text TEXT,
+	event_type INT,
+	event_flag INT,
 	main_dev_category INT,
 	main_dev_number INT,
 	dev_category INT,

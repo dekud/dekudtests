@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python
 
 import MySQLdb
@@ -31,20 +32,30 @@ class dbcontroller:
 #				"%s,%s, %s,"
 #				"%s,%s, %s," 
 #				"%s, %s);")
-		 
-		text = "Place for event text"
-		strq_t = ("INSERT INTO events (sensor_id, object_id, datetime, dev_datetime,text,"
+		
+#		getEstr = "SELECT * from eventtypes where event_type="+json_dict.et+";"
+#		eventtext = self.db.get(getEstr)
+#		print eventtext
+#		if json_dict.ef == "0x01":
+#			text = eventtext.new
+#		else:
+#			text = eventtext.restore
+		strq_t = ("INSERT INTO events (sensor_id, object_id, datetime, dev_datetime, event_type, event_flag, "
 				"main_dev_category, main_dev_number,dev_category, dev_number, dev_type, t_object_category, t_objects) " 
 				"VALUES('{0}','{1}', NOW(), '{2}',"
 				"'{3}', '{4}', '{5}',"
 				"'{6}', '{7}', '{8}'," 
-				"'{9}', '{10}');")
+				"'{9}', '{10}', '{11}');")
 		strton = ""
+		is_s = True
 		for item in json_dict.ton:
-			strton = strton +", " + item
+			if is_s:
+				strton = item
+			else:
+				strton = strton +", " + item
 
 		strq = strq_t.format(sensor_id, object_id, json_dict.tm,
-								text, int(json_dict.dc1, 0),int( json_dict.dn1, 0),
+								int(json_dict.et, 0), int(json_dict.ef, 0), int(json_dict.dc1, 0),int( json_dict.dn1, 0),
 								int(json_dict.dc2, 0), int(json_dict.dn2, 0), int(json_dict.dt2, 0),
 								int(json_dict.toc, 0), strton) 
 
