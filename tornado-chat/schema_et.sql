@@ -4,3 +4,10 @@ CREATE TABLE eventtypes (
 	new TEXT,
 	restore TEXT
 );
+
+CREATE TABLE devttypes (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	type_id INT NOT NULL,
+	type_text TEXT,
+	restore TEXT
+);

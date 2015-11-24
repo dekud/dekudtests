@@ -27,7 +27,9 @@ class dbcontroller:
 			lt = ev.datetime + datetime.timedelta(hours = 3)
 			qs = "SELECT * from eventtypes where event_type = " + str(ev.event_type) + ";"
 			etexts = self.db.get(qs)
-			user_str = 'T' + hex(ev.dev_type) +'['+ str(ev.dev_number)+']'
+			qs = "SELECT * from devttypes where type_id = " + str(ev.dev_type) + ";"
+			devnames = self.db.get(qs)
+			user_str = devnames.type_text +'['+ str(ev.dev_number)+']'
 			mm = {'user': user_str, 'text' : ' '}
 			if ev.event_flag == 1:
 				mm['text'] = etexts.new
