@@ -19,6 +19,27 @@ class dbcontroller:
 			return None
 		return sensor[0]
 
+	def getLastEvents(self, id):
+		strq = "SELECT * FROM events where id > " +id +";"
+		events = self.db.query(strq)
+		messages = []
+		for ev in events:
+			lt = ev.datetime + datetime.timedelta(hours = 3)
+			qs = "SELECT * from eventtypes where event_type = " + str(ev.event_type) + ";"
+			etexts = self.db.get(qs)
+			qs = "SELECT * from devttypes where type_id = " + str(ev.dev_type) + ";"
+			devnames = self.db.get(qs)
+			user_str = devnames.type_text +'['+ str(ev.dev_number)+']'
+			mm = {'user': user_str, 'text' : ' '}
+			if ev.event_flag == 1:
+				mm['text'] = etexts.new
+			else:
+				mm['text'] = etexts.restore
+			mm['datetime'] = str(lt)
+			mm['id'] = str(ev.id)
+			messages.append(mm)
+		return messages
+		
 	def getEvents(self):
 		strq = "SELECT * FROM events;"
 		events = self.db.query(strq)
