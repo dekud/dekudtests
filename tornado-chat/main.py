@@ -56,11 +56,11 @@ class CmdHandler(BaseHandler):
             dev = self.get_argument("dev")
             jc = json_parser.JsonCmd(cmd)
             print(jc.get_json())
-            print('cmdHandler: ' + cmd)
             self.application.jhandlers[dev].sendcmd(jc.get_json())
-
         except tornado.web.MissingArgumentError:
             print ("cmd err")
+        except KeyError:
+            print self.application.jhandlers
 
 
 def check_credentials(handler, user, pwd):
@@ -136,7 +136,8 @@ class JsonHandler(jot_handler.JoTHandler):
     def on_close(self):
         self.db_cont.pushConnectionEvent(self.dev_id, self.request.remote_ip, 'Close connection')
         print('JsonHandler close')
-        del self.application.jhandlers[self.dev_id]
+        if self.application.jhandlers[self.dev_id] == self:
+            del self.application.jhandlers[self.dev_id]
 
     def validate(self):
         print "JsonHandler validate:"
@@ -156,7 +157,7 @@ class JsonHandler(jot_handler.JoTHandler):
 
         self.db_cont.pushConnectionEvent(self.dev_id, self.request.remote_ip, 'Open connection')
         self._timer = tornado.ioloop.PeriodicCallback(self.test_timeout, 40000)
-        #self._timer.start()
+        # self._timer.start()
 
         self.application.jhandlers[self.dev_id] = self
 
@@ -168,7 +169,7 @@ class JsonHandler(jot_handler.JoTHandler):
         self.write_message(jstr)
 
     def sendcmd(self, j):
-         self.write_message(j)
+        self.write_message(j)
 
 
 class Application(tornado.web.Application):
