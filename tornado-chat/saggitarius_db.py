@@ -87,7 +87,7 @@ class dbcontroller:
                              int(json_dict.dc2, 0), int(json_dict.dn2, 0), int(json_dict.dt2, 0),
                              int(json_dict.toc, 0), strton)
 
-        print strq
+        #print strq
         self.db.execute(strq)
 
     def _getSensorAndObjIdByDevId(self, device_id):

@@ -66,23 +66,25 @@ class JsonParser:
         self.isEventToDB = False
         self.events = []
         try:
-            print("JSON str: " + message)
+            #print("JSON str: " + message)
             dic = json.loads(message)
             if u'req' in dic:
                 req = JReq(dic)
                 self.txt = self._on_req(req)
+                self.has_answ = True
             elif u'req_answ' in dic:
                 req_answ = JReqAnswer(dic)
-                self.txt = 'this is req_answ'
-            elif u'device_id' in dic:
-                self.txt = 'this is configuration'
+                self.txt = ''
+                self.has_answ = False
         except:
             self.txt = 'error json'
             raise
             pass
 
     def get_result(self):
-        return self.txt + ' ok\r\n'
+        txt = self.txt + '\r\n'
+        res = {'has_answer':self.has_answ, 'txt':txt}
+        return res
 
     def _on_req(self, req):
         if req.req == u'PING':
@@ -100,3 +102,14 @@ class JsonParser:
 
     def _on_req_answer(self, req_answ):
         pass
+
+class JsonCmd:
+    def __init__(self, cmd):
+        cmd_txt = ['0x00','0x01','0x02','0x03']
+        dict = {'req':'PARTS', 'v': '1', 'req_id':'0x0001', 'args': {'num':'0x00', 'cat':'0x03', 'p_num':'0x01', 'p_cat':'0x06', 'u_num':'0x01', 'cmd': cmd_txt[int(cmd)]}}
+        self.j = json.dumps(dict) + '\r\n'
+        pass
+
+    def get_json(self):
+        return self.j
+

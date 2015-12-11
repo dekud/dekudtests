@@ -46,7 +46,9 @@ class JoTHandler(tornado.web.RequestHandler):
                 "Connection: Upgrade\r\n"
                 "\r\n"))
 
+            print("start receive 1")
             self._receive_frame()
+            print("start receive 2")
 
         except ValueError:
             print(ValueError.__dict__)
@@ -68,6 +70,7 @@ class JoTHandler(tornado.web.RequestHandler):
             self._abort()
 
     def _on_read(self, data):
+        print("_on_read")
         self.on_message(data)
         self._receive_frame()
         return

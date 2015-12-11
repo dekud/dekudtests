@@ -16,3 +16,12 @@ function update_messages()
 	setTimeout(function(){ update_messages()},10000);
 }
 
+function sendCmd(cmd, dev)
+{
+    alert(cmd);
+    $.ajax({
+    url: '/cmd?cmd='+cmd + '&dev='+dev,
+    success: function (data, textStatus) {
+    }
+	});
+}

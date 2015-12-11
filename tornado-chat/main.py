@@ -8,6 +8,8 @@ import tornado.options
 import tornado.httpserver
 import os
 from saggitarius_db import dbcontroller
+from six import print_
+from tornado import ioloop
 from tornado.options import define, options
 import json_parser
 import json
@@ -24,23 +26,41 @@ class BaseHandler(tornado.web.RequestHandler):
         return self.get_secure_cookie("user")
 
 
-
 class LoginHandler(BaseHandler):
     def get(self):
         self.render('login.html')
 
     def post(self):
-        if self.get_argument("password") != "streletz":
-           self.redirect("/login")
-           return
+        try:
+            if self.get_argument("password") != "streletz":
+                self.redirect("/login")
+                return
+        except tornado.web.MissingArgumentError:
+            self.redirect("/login")
+            return
 
         self.set_secure_cookie("user", self.get_argument("name"))
         self.redirect("/")
+
 
 class AuthLogoutHandler(BaseHandler):
     def get(self):
         self.clear_cookie("user")
         self.redirect("/login")
+
+
+class CmdHandler(BaseHandler):
+    def get(self):
+        try:
+            cmd = self.get_argument("cmd")
+            dev = self.get_argument("dev")
+            jc = json_parser.JsonCmd(cmd)
+            print(jc.get_json())
+            print('cmdHandler: ' + cmd)
+            self.application.jhandlers[dev].sendcmd(jc.get_json())
+
+        except tornado.web.MissingArgumentError:
+            print ("cmd err")
 
 
 def check_credentials(handler, user, pwd):
@@ -72,7 +92,7 @@ class MainHandler(BaseHandler):
             self.redirect("/login")
             return
         messages = self.application.db_cont.getEvents()
-        self.render('index.html', messages=messages, user = name)
+        self.render('index.html', messages=messages, user=name, device='0x00000000010203AB')
 
 
 class MessageHandler(tornado.web.RequestHandler):
@@ -109,12 +129,14 @@ class JsonHandler(jot_handler.JoTHandler):
         if jparser.isEventToDB:
             self.db_cont.pushEvent(self.dev_id, jparser.events[0])
 
-        print("json answer: " + answer)
-        self.write_message(answer)
+        if answer['has_answer']:
+            print("json answer: " + answer['txt'])
+            self.write_message(answer['txt'])
 
     def on_close(self):
         self.db_cont.pushConnectionEvent(self.dev_id, self.request.remote_ip, 'Close connection')
         print('JsonHandler close')
+        del self.application.jhandlers[self.dev_id]
 
     def validate(self):
         print "JsonHandler validate:"
@@ -133,7 +155,20 @@ class JsonHandler(jot_handler.JoTHandler):
             return False
 
         self.db_cont.pushConnectionEvent(self.dev_id, self.request.remote_ip, 'Open connection')
+        self._timer = tornado.ioloop.PeriodicCallback(self.test_timeout, 40000)
+        #self._timer.start()
+
+        self.application.jhandlers[self.dev_id] = self
+
         return True
+
+    def test_timeout(self):
+        print("test timeout")
+        jstr = ' "req":"ST", "v":1, "req_id":"0x0001", "arg":{"tm":"2015-09-21T15:43:49.000+0000", "cmd":"0x01"}\r\n'
+        self.write_message(jstr)
+
+    def sendcmd(self, j):
+         self.write_message(j)
 
 
 class Application(tornado.web.Application):
@@ -146,12 +181,16 @@ class Application(tornado.web.Application):
             (r'/messages/?', MessageHandler),
             (r"/login", LoginHandler),
             (r"/logout", AuthLogoutHandler),
+            (r"/cmd/?", CmdHandler),
+
         ]
         tornado.web.Application.__init__(self, handlers, cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__")
 
         self.db_cont = dbcontroller(
             options.mysql_host, options.mysql_database,
             options.mysql_user, options.mysql_password)
+
+        self.jhandlers = {}
 
 
 if __name__ == "__main__":
