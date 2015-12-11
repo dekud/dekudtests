@@ -26,26 +26,40 @@
     </head>
     <body>
  	<div class="container">
-        <div class="panel panel-info" id = "logout_panel">
-            <div class="panel-heading"><h3 class="panel-title">Пользователь {{ user }}</h3></div>
-			<div class="panel-body">
-                <form action="/logout" method="get">
-                    <button type="submit" class="btn btn-info btn-block" style="width: 100px">Выход</button>
-                </form>
+        <div class="row">
+            <div class="col-md-9">
+                <div class="panel panel-primary" id = "cmd_panel">
+                    <div class="panel-heading"><h3 class="panel-title">Устройство {{ device }}</h3></div>
+                    <div class="panel-body">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-primary"  id = "cmdB1" >Постановка на охрану</button>
+                            <button type="button" class="btn btn-primary"  id = "cmdB2" >Снять с охраны</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-    <div class="container">
-        <div class="panel panel-info" id = "cmd_panel">
-            <div class="panel-heading"><h3 class="panel-title">Устройство {{ device }}</h3></div>
-			<div class="panel-body">
-                    <a class="btn btn-info btn-block" style="width: 200px" id = "cmdB1" >Постановка на охрану</a>
-                    <a class="btn btn-info btn-block" style="width: 200px" id = "cmdB2" >Снять с охраны</a>
+            <div class="col-md-3">
+                <div class="panel panel-primary" id = "logout_panel">
+                    <div class="panel-heading"><h3 class="panel-title">Пользователь {{ user }}</h3></div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-4">
+
+                            </div>
+                            <div class="col-md-4">
+                                    <form action="/logout" method="get">
+                                        <button type="submit" class="btn btn-primary btn-md">Выход</button>
+                                    </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+
         </div>
     </div>
 	<div class="container">
-		<div id="chat-messages" class="panel panel-info">
+		<div id="chat-messages" class="panel panel-primary">
 			<div class="panel-heading"><h3 class="panel-title">Cобытия Sagittarius</h3></div>
 			<div class="panel-body chat-messages" id="div_body">
 				<table class="table table-striped" id="table_event">
