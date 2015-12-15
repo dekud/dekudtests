@@ -24,12 +24,12 @@
 
         </script>
     </head>
-    <body>
+    <body >
  	<div class="container">
         <div class="row">
             <div class="col-md-9">
                 <div class="panel panel-primary" id = "cmd_panel">
-                    <div class="panel-heading"><h3 class="panel-title">Устройство {{ device }}</h3></div>
+                    <div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-cog"></span> Устройство {{ device }}</h3></div>
                     <div class="panel-body">
                         <div class="btn-group">
                             <button type="button" class="btn btn-primary"  id = "cmdB1" >Постановка на охрану</button>
@@ -40,7 +40,7 @@
             </div>
             <div class="col-md-3">
                 <div class="panel panel-primary" id = "logout_panel">
-                    <div class="panel-heading"><h3 class="panel-title">Пользователь {{ user }}</h3></div>
+                    <div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-user"></span> Пользователь {{ user }}</h3></div>
                     <div class="panel-body">
                         <div class="row">
                             <div class="col-md-4">
@@ -48,7 +48,7 @@
                             </div>
                             <div class="col-md-4">
                                     <form action="/logout" method="get">
-                                        <button type="submit" class="btn btn-primary btn-md">Выход</button>
+                                        <button type="submit" class="btn btn-primary btn-md"><span class="glyphicon glyphicon-log-out"></span> Выход</button>
                                     </form>
                             </div>
                         </div>
@@ -60,7 +60,7 @@
     </div>
 	<div class="container">
 		<div id="chat-messages" class="panel panel-primary">
-			<div class="panel-heading"><h3 class="panel-title">Cобытия Sagittarius</h3></div>
+			<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon glyphicon-list-alt"></span> Cобытия Sagittarius</h3></div>
 			<div class="panel-body chat-messages" id="div_body">
 				<table class="table table-striped" id="table_event">
 					<tr>
@@ -68,16 +68,7 @@
 					<th>Событие</th>
 					<th>Время</th>
 					</tr>
-<!--
-					{% for message in messages %}
-					<tr>
-					<td>{{ message['user'] }}</td>
-					<td>{{ message['text'] }}</td>
-					<td>{{ message['datetime'] }}</td>
-					</tr>
-					{% end %}
--->
-					</table>
+                </table>
 			</div>
 		</div>
 	</div>
