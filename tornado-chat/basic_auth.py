@@ -20,7 +20,7 @@ def basic_auth(auth_func=lambda *args, **kwargs: True, after_login_func=lambda *
 
                     if auth_func(handler, user, pwd):
                         print "auth ok"
-                        after_login_func(handler, kwargs, user, pwd)
+                        after_login_func(handler, user, pwd)
                     else:
                         create_auth_header()
 

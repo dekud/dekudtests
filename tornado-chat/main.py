@@ -1,66 +1,16 @@
 #!/usr/bin/env python
 
-import tornado.ioloop
-import tornado.web
 import basic_auth
 import jot_handler
-import tornado.options
-import tornado.httpserver
-import os
-from saggitarius_db import dbcontroller
-from six import print_
-from tornado import ioloop
-from tornado.options import define, options
 import json_parser
-import json
 import myhost
-
-define("mysql_host", default="127.0.0.1:3306", help="saggitarius database host")
-define("mysql_database", default="saggitarius", help="saggitarius database name")
-define("mysql_user", default="user", help="database user")
-define("mysql_password", default="user", help="database password")
-
-
-class BaseHandler(tornado.web.RequestHandler):
-    def get_current_user(self):
-        return self.get_secure_cookie("user")
-
-
-class LoginHandler(BaseHandler):
-    def get(self):
-        self.render('login.html')
-
-    def post(self):
-        try:
-            if self.get_argument("password") != "streletz":
-                self.redirect("/login")
-                return
-        except tornado.web.MissingArgumentError:
-            self.redirect("/login")
-            return
-
-        self.set_secure_cookie("user", self.get_argument("name"))
-        self.redirect("/")
-
-
-class AuthLogoutHandler(BaseHandler):
-    def get(self):
-        self.clear_cookie("user")
-        self.redirect("/login")
-
-
-class CmdHandler(BaseHandler):
-    def get(self):
-        try:
-            cmd = self.get_argument("cmd")
-            dev = self.get_argument("dev")
-            jc = json_parser.JsonCmd(cmd)
-            print(jc.get_json())
-            self.application.jhandlers[dev].sendcmd(jc.get_json())
-        except tornado.web.MissingArgumentError:
-            print ("cmd err")
-        except KeyError:
-            print self.application.jhandlers
+import os
+import tornado.httpserver
+import tornado.ioloop
+import tornado.options
+import tornado.web
+from base_app import CmdManager, BaseApplication
+from userapp import UserApplicatin, MainHandler
 
 
 def check_credentials(handler, user, pwd):
@@ -76,36 +26,12 @@ def check_credentials(handler, user, pwd):
         return False
 
 
-def hello_fun(handler, kwargs, user, pwd):
+def after_login(handler, user, pwd):
     handler.current_user = user
     handler.current_pwd = pwd
 
 
-# @basic_auth.basic_auth(check_credentials, hello_fun)
-class MainHandler(BaseHandler):
-    def get(self):
-        if not self.current_user:
-            self.redirect("/login")
-            return
-        name = tornado.escape.xhtml_escape(self.current_user)
-        if name != "cloud":
-            self.redirect("/login")
-            return
-        messages = self.application.db_cont.getEvents()
-        self.render('index.html', messages=messages, user=name, device='0x00000000010203AB')
-
-
-class MessageHandler(tornado.web.RequestHandler):
-    def get(self):
-        try:
-            _last = self.get_argument('last')
-        except tornado.web.MissingArgumentError:
-            _last = 0
-        messages = self.application.db_cont.getLastEvents(_last)
-        self.write(json.dumps(messages))
-
-
-@basic_auth.basic_auth(check_credentials, hello_fun)
+@basic_auth.basic_auth(check_credentials, after_login)
 class SensorsHandler(tornado.web.RequestHandler):
     def get(self, device_id):
         if device_id != self.current_user:
@@ -119,6 +45,10 @@ class SensorsHandler(tornado.web.RequestHandler):
 
 
 class JsonHandler(jot_handler.JoTHandler):
+    def __init__(self, application, request, **kwargs):
+        super(JsonHandler, self).__init__(application, request, **kwargs)
+        self.dev_id = 0
+
     @property
     def db_cont(self):
         return self.application.db_cont
@@ -156,10 +86,7 @@ class JsonHandler(jot_handler.JoTHandler):
             return False
 
         self.db_cont.pushConnectionEvent(self.dev_id, self.request.remote_ip, 'Open connection')
-        self._timer = tornado.ioloop.PeriodicCallback(self.test_timeout, 40000)
-        # self._timer.start()
-
-        self.application.jhandlers[self.dev_id] = self
+        self.application.cmdManager.add_handler(self.dev_id, self)
 
         return True
 
@@ -168,42 +95,41 @@ class JsonHandler(jot_handler.JoTHandler):
         jstr = ' "req":"ST", "v":1, "req_id":"0x0001", "arg":{"tm":"2015-09-21T15:43:49.000+0000", "cmd":"0x01"}\r\n'
         self.write_message(jstr)
 
-    def sendcmd(self, j):
-        self.write_message(j)
+    def execute(self, message):
+        self.write_message(message)
 
 
-class Application(tornado.web.Application):
-    def __init__(self):
+class DeviceApplication(BaseApplication):
+    def __init__(self, _cmdmanager, **settings):
+        super(DeviceApplication, self).__init__(_cmdmanager, **settings)
         handlers = [
             (r'/', MainHandler),
             (r'/sensors/v1/test-endpoint/?', JsonHandler),
-            (r'/sensors/v1/([0-9,a-f,A-F,x]*)', SensorsHandler),
-            (r'/static/(.*)', tornado.web.StaticFileHandler, {'path': 'static/'}),
-            (r'/messages/?', MessageHandler),
-            (r"/login", LoginHandler),
-            (r"/logout", AuthLogoutHandler),
-            (r"/cmd/?", CmdHandler),
-
+            (r'/sensors/v1/([0-9,a-f,A-F,x]*)', SensorsHandler)
         ]
         tornado.web.Application.__init__(self, handlers, cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__")
 
-        self.db_cont = dbcontroller(
-            options.mysql_host, options.mysql_database,
-            options.mysql_user, options.mysql_password)
-
-        self.jhandlers = {}
-
 
 if __name__ == "__main__":
-    app = Application()
+    cmdManager = CmdManager()
+
+    devApp = DeviceApplication(cmdManager)
     # app.listen(8888)
-    http_server = tornado.httpserver.HTTPServer(app,
+    http_server = tornado.httpserver.HTTPServer(devApp,
                                                 ssl_options={
                                                     "certfile": os.path.join("certs/myserver.crt"),
                                                     "keyfile": os.path.join("certs/myserver.key"),
                                                 })
+    userApp = UserApplicatin(cmdManager)
+    # app.listen(8888)
+    http_server80 = tornado.httpserver.HTTPServer(devApp)
+
     # http_server.listen(8888)
     # tornado.ioloop.IOLoop.current().start()
     http_server.bind(8888)
     http_server.start(0)
+
+    http_server80.bind(80)
+    http_server80.start(1)
+
     tornado.ioloop.IOLoop.current().start()

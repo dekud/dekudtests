@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # !/usr/bin/env python
 
-import MySQLdb
 import torndb
 import datetime
 

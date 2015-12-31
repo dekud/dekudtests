@@ -3,12 +3,15 @@
 import tornado.ioloop
 import tornado.web
 from tornado.iostream import StreamClosedError
+import tornado.escape
 
 
 class JoTHandler(tornado.web.RequestHandler):
     def __init__(self, application, request, **kwargs):
         tornado.web.RequestHandler.__init__(self, application, request, **kwargs)
         self.stream = None
+        self.timeout = 0
+        self._timer = tornado.ioloop.PeriodicCallback(self.connection_timeout, 10000)
 
     def on_message(self, message):
         """Implement this for recieve data"""
@@ -20,10 +23,11 @@ class JoTHandler(tornado.web.RequestHandler):
         try:
             return self.stream.write(message)
         except StreamClosedError:
-            self.abort()
+            self._abort()
         return
 
     def on_close(self):
+        print("JoTHandler onClose")
         pass
 
     def close(self):
@@ -46,9 +50,8 @@ class JoTHandler(tornado.web.RequestHandler):
                 "Connection: Upgrade\r\n"
                 "\r\n"))
 
-            print("start receive 1")
+            self._timer.start()
             self._receive_frame()
-            print("start receive 2")
 
         except ValueError:
             print(ValueError.__dict__)
@@ -56,10 +59,11 @@ class JoTHandler(tornado.web.RequestHandler):
             return
         except:
             print("Error")
-            self.abort()
+            self._abort()
             return
 
     def _on_connection_close(self):
+        self._timer.stop()
         self.on_close()
         pass
 
@@ -71,6 +75,7 @@ class JoTHandler(tornado.web.RequestHandler):
 
     def _on_read(self, data):
         print("_on_read")
+        self.timeout = 0
         self.on_message(data)
         self._receive_frame()
         return
@@ -79,3 +84,10 @@ class JoTHandler(tornado.web.RequestHandler):
         if not self.stream.closed():
             self.stream.close()
         self.on_close()
+
+    def connection_timeout(self):
+        self.timeout += 1
+        if self.timeout == 12:
+            self._abort()
+
+
