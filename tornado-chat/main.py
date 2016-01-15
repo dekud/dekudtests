@@ -66,8 +66,7 @@ class JsonHandler(jot_handler.JoTHandler):
     def on_close(self):
         self.db_cont.pushConnectionEvent(self.dev_id, self.request.remote_ip, 'Close connection')
         print('JsonHandler close')
-        if self.application.jhandlers[self.dev_id] == self:
-            del self.application.jhandlers[self.dev_id]
+        self.application.cmdManager.remove_handler(self)
 
     def validate(self):
         print "JsonHandler validate:"
