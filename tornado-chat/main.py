@@ -114,23 +114,15 @@ if __name__ == "__main__":
     cmdManager = CmdManager()
 
     devApp = DeviceApplication(cmdManager)
-    # app.listen(8888)
     http_server = tornado.httpserver.HTTPServer(devApp,
                                                 ssl_options={
                                                     "certfile": os.path.join("certs/myserver.crt"),
                                                     "keyfile": os.path.join("certs/myserver.key"),
                                                 })
-    print(CmdManager)
     userApp = UserApplicatin(cmdManager)
-    # app.listen(8888)
     http_server80 = tornado.httpserver.HTTPServer(userApp)
 
-    # http_server.listen(8888)
-    # tornado.ioloop.IOLoop.current().start()
-    http_server.bind(8888)
-    http_server.start(0)
-
-    http_server80.bind(8080)
-    http_server80.start(1)
+    http_server.listen(8888)
+    http_server80.listen(8080)
 
     tornado.ioloop.IOLoop.current().start()
