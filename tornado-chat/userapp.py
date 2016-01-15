@@ -21,7 +21,7 @@ class UserApplicatin(base_app.BaseApplication):
 
         ]
         tornado.web.Application.__init__(self, handlers, cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__")
-
+        print(self.cmdManager)
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -58,7 +58,7 @@ class CmdHandler(BaseHandler):
             dev = self.get_argument("dev")
             jc = json_parser.JsonCmd(cmd)
             print(jc.get_json())
-            self.application.CmdManager.execute_handler(dev, jc.get_json())
+            self.application.cmdManager.execute_handler(dev, jc.get_json())
         except tornado.web.MissingArgumentError:
             print ("cmd err")
         except KeyError:

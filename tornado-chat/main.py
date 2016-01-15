@@ -120,16 +120,17 @@ if __name__ == "__main__":
                                                     "certfile": os.path.join("certs/myserver.crt"),
                                                     "keyfile": os.path.join("certs/myserver.key"),
                                                 })
+    print(CmdManager)
     userApp = UserApplicatin(cmdManager)
     # app.listen(8888)
-    http_server80 = tornado.httpserver.HTTPServer(devApp)
+    http_server80 = tornado.httpserver.HTTPServer(userApp)
 
     # http_server.listen(8888)
     # tornado.ioloop.IOLoop.current().start()
     http_server.bind(8888)
     http_server.start(0)
 
-    http_server80.bind(80)
+    http_server80.bind(8080)
     http_server80.start(1)
 
     tornado.ioloop.IOLoop.current().start()
