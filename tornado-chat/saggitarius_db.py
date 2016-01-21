@@ -89,6 +89,17 @@ class dbcontroller:
         #print strq
         self.db.execute(strq)
 
+    def getUserByName(self, login):
+        qs = "SELECT * from users where login = '" + login + "';"
+        user = self.db.get(qs)
+        return user
+
+    def saveUser(self, login, password, name, second_name, email):
+        qs = "INSERT INTO users (login, password_hash, name, second_name, email, enabled) VALUES('"+login+"', '"+password+"', '"+name+"', '"+second_name+"', '"+email+"', 1);"
+        print qs
+        self.db.execute(qs)
+
+
     def _getSensorAndObjIdByDevId(self, device_id):
         strq = "SELECT * from sensors where device_id='" + device_id + "';"
         sensor = self.db.get(strq)

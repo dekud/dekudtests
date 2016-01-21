@@ -1,12 +1,11 @@
 import json
-
 import json_parser
 import tornado.web
 from saggitarius_db import dbcontroller
 from tornado.options import options
 import tornado.escape
 import base_app
-
+import hashlib
 
 class UserApplicatin(base_app.BaseApplication):
     def __init__(self, _cmdmanager, **settings):
@@ -16,12 +15,14 @@ class UserApplicatin(base_app.BaseApplication):
             (r'/static/(.*)', tornado.web.StaticFileHandler, {'path': 'static/'}),
             (r'/messages/?', MessageHandler),
             (r"/login", LoginHandler),
+            (r"/create_user", CreateUserHandler),
             (r"/logout", AuthLogoutHandler),
             (r"/cmd/?", CmdHandler),
 
         ]
         tornado.web.Application.__init__(self, handlers, cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__")
         print(self.cmdManager)
+
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -34,16 +35,59 @@ class LoginHandler(BaseHandler):
 
     def post(self):
         try:
-            if self.get_argument("password") != "streletz":
+            login = self.get_argument("name")
+            password = self.get_argument("password")
+            print login
+            print password
+            user = self.application.db_cont.getUserByName(login)
+            m = hashlib.sha1()
+            m.update(password)
+            pass_hash = str(m.hexdigest())
+
+            if user == None :
+                print '000000'
                 self.redirect("/login")
                 return
+
+            if (pass_hash != user.password_hash):
+                self.redirect("/login")
+                return
+
+            print '11111'
         except tornado.web.MissingArgumentError:
             self.redirect("/login")
             return
-
+        print '2222'
         self.set_secure_cookie("user", self.get_argument("name"))
         self.redirect("/")
 
+class CreateUserHandler(BaseHandler):
+    def get(self):
+        self.render('create_user.html')
+
+    def post(self):
+        try:
+            login = self.get_argument("login")
+            password = self.get_argument("password")
+            name = self.get_argument("name")
+            second_name = self.get_argument("second_name")
+            email = self.get_argument("email")
+            m = hashlib.sha1()
+            m.update(password)
+            pass_hash = m.hexdigest()
+            print (login)
+            print pass_hash
+            user = self.application.db_cont.getUserByName(login)
+            if user != None:
+                self.redirect("/create_user")
+                return
+
+            self.application.db_cont.saveUser(login, pass_hash, name, second_name, email)
+
+            self.redirect("/login")
+        except tornado.web.MissingArgumentError:
+            self.redirect("/create_user")
+            return
 
 class AuthLogoutHandler(BaseHandler):
     def get(self):
@@ -71,9 +115,9 @@ class MainHandler(BaseHandler):
             self.redirect("/login")
             return
         name = tornado.escape.xhtml_escape(self.current_user)
-        if name != "cloud":
-            self.redirect("/login")
-            return
+        # if name != "cloud":
+        #     self.redirect("/login")
+        #     return
         messages = self.application.db_cont.getEvents()
         self.render('index.html', messages=messages, user=name, device='0x00000000010203AB')
 
@@ -86,3 +130,4 @@ class MessageHandler(tornado.web.RequestHandler):
             _last = 0
         messages = self.application.db_cont.getLastEvents(_last)
         self.write(json.dumps(messages))
+        return

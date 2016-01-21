@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <head>
+        <meta charset="utf-8">
+        <title>Sagittarius</title>
+        <link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap-theme.min.css">
+		<link rel="stylesheet" href="/static/css/style.css">
+
+        <script src="/static/js/jquery.min.js"></script>
+        <script src="/static/lib/bootstrap/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="panel panel-primary" id = "reg_panel">
+                    <div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-user"></span> Новый пользователь </h3></div>
+                    <div class="panel-body">
+                        <form action="/create_user" method="post">
+                            <div class="form-group">
+                                <label for="inputLogin">Имя пользователя</label>
+                                <input type="text" name="login" id="inputLogin" class="form-control" placeholder="user" required autofocus>
+                            </div>
+                                <div class="form-group">
+                                <label for="inputPassword">Пароль</label>
+                                <input name="password" type="password" id="inputPassword" class="form-control" placeholder="password" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputName">Настоящее имя</label>
+                                <input type="text" name="name" id="inputName" class="form-control" placeholder="Александр Сергеевич" required autofocus>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputSName">Фамилия</label>
+                                <input type="text" name="second_name" id="inputSName" class="form-control" placeholder="Пушкин" required autofocus>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputEmail">Email</label>
+                                <input type="email" name="email" id="inputEmail" class="form-control" placeholder="pushkin@email.ru" required autofocus>
+                            </div>
+                            <button type="submit" class="btn btn-default">Сохранить</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
