@@ -19,8 +19,14 @@ class dbcontroller:
             return None
         return sensor[0]
 
-    def getLastEvents(self, id):
-        strq = "SELECT * FROM events where id > " + id + ";"
+    def getLastEvents(self, id, device_id):
+        qs ="SELECT * from sensors where sensors.device_id = '" + device_id + "';"
+        dev = self.db.get(qs)
+        if dev == None:
+            return []
+
+        strq = "SELECT * FROM events where id > " + id + " and sensor_id = "+ str(dev.id) + ";"
+
         events = self.db.query(strq)
         messages = []
         for ev in events:
@@ -99,6 +105,13 @@ class dbcontroller:
         print qs
         self.db.execute(qs)
 
+    def getUserDevices(self, login):
+        qs = "select u.login, d.device_id from users as u " \
+             "left outer join user_dev as ud on u.id = ud.user_id " \
+             "left outer join sensors as d on ud.sensor_id = d.id " \
+             "where u.login = %s;"
+        udev = self.db.get(qs,login)
+        return udev
 
     def _getSensorAndObjIdByDevId(self, device_id):
         strq = "SELECT * from sensors where device_id='" + device_id + "';"

@@ -10,9 +10,10 @@
         <script src="/static/js/jquery.min.js"></script>
         <script src="/static/lib/bootstrap/js/bootstrap.min.js"></script>
         <script src="/static/js/main.js"></script>
+        {% if device %}
         <script>
-        $(document).ready(function(){
-			update_messages();
+         $(document).ready(function(){
+			update_messages( '{{ device }}' );
 
 			$('#cmdB1').on('click', function(e){
                 sendCmd(1,'{{ device }}');
@@ -20,24 +21,53 @@
             $('#cmdB2').on('click', function(e){
                 sendCmd(2,'{{ device }}');
             });
+;
 		});
-
         </script>
+        {% else %}
+        <script>
+            $(document).ready(function(){
+                $('#cmdAddDevice').on('click', function(e){
+                    alert('Add dev');
+                })
+            });
+        </script>
+        {% end %}
     </head>
     <body >
  	<div class="container">
         <div class="row">
+            {% if device %}
             <div class="col-md-9">
+
                 <div class="panel panel-primary" id = "cmd_panel">
-                    <div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-cog"></span> Устройство {{ device }}</h3></div>
+                    <div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-cog"></span> Контроллер {{ device }}</h3></div>
                     <div class="panel-body">
                         <div class="btn-group">
                             <button type="button" class="btn btn-primary"  id = "cmdB1" >Постановка на охрану</button>
                             <button type="button" class="btn btn-primary"  id = "cmdB2" >Снять с охраны</button>
                         </div>
                     </div>
+
                 </div>
             </div>
+            {% else %}
+             <div class="col-md-9">
+                <div class="panel panel-primary">
+                    <div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-cog"></span> Контроллер</h3></div>
+                    <div class="panel-body">
+                         <div class="row">
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-primary"  id = "cmdAddDevice" >Добавить контроллер</button>
+                            </div>
+                            <div class="col-md-9">
+                                <input type="text" name="name" id="inputName" class="form-control" placeholder="0x00000000000" required autofocus>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+            {% end %}
             <div class="col-md-3">
                 <div class="panel panel-primary" id = "logout_panel">
                     <div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-user"></span> Пользователь {{ user }}</h3></div>
@@ -58,6 +88,7 @@
 
         </div>
     </div>
+    {% if device %}
 	<div class="container">
 		<div id="chat-messages" class="panel panel-primary">
 			<div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon glyphicon-list-alt"></span> Cобытия Sagittarius</h3></div>
@@ -72,5 +103,6 @@
 			</div>
 		</div>
 	</div>
+    {% end %}
      </body>
 </html>

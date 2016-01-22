@@ -114,20 +114,24 @@ class MainHandler(BaseHandler):
         if not self.current_user:
             self.redirect("/login")
             return
-        name = tornado.escape.xhtml_escape(self.current_user)
-        # if name != "cloud":
-        #     self.redirect("/login")
-        #     return
-        messages = self.application.db_cont.getEvents()
-        self.render('index.html', messages=messages, user=name, device='0x00000000010203AB')
 
+        name = tornado.escape.xhtml_escape(self.current_user)
+        udev = self.application.db_cont.getUserDevices(name)
+        print (udev)
+
+        if udev != None:
+            self.render('index.html', user=name, device=udev.device_id)
+        else:
+            self.render('index.html', user=name)
 
 class MessageHandler(tornado.web.RequestHandler):
     def get(self):
         try:
             _last = self.get_argument('last')
+            device_id = self.get_argument('device')
         except tornado.web.MissingArgumentError:
             _last = 0
-        messages = self.application.db_cont.getLastEvents(_last)
+            device_id = 0
+        messages = self.application.db_cont.getLastEvents(_last, device_id)
         self.write(json.dumps(messages))
         return
