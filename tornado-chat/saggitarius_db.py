@@ -113,9 +113,26 @@ class dbcontroller:
         udev = self.db.get(qs,login)
         return udev
 
+    def setUserDevice(self, login, dev_id):
+        user = self.getUserByName(login)
+        if user != None:
+            qs = "insert into user_dev (user_id, sensor_id) VALUES ('%s', '%s');"
+            self.db.execute(qs, user.id, dev_id)
+
+
+    def addSensor(self, device_id, key, token):
+        [sensor_id, object_id] = self._getSensorAndObjIdByDevId(device_id)
+        if sensor_id == None:
+            qs = "INSERT INTO sensors (device_id, device_key, token, object_id, updated ) VALUES (%s, %s, %s, '1', NOW());"
+            self.db.execute(qs, device_id, key, token)
+        [sensor_id, object_id] = self._getSensorAndObjIdByDevId(device_id)
+        return sensor_id
+
     def _getSensorAndObjIdByDevId(self, device_id):
         strq = "SELECT * from sensors where device_id='" + device_id + "';"
         sensor = self.db.get(strq)
+        if sensor == None:
+            return [None, None]
         sensor_id = sensor.id
         object_id = sensor.object_id
         return [sensor_id, object_id]

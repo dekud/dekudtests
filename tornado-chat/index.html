@@ -26,11 +26,7 @@
         </script>
         {% else %}
         <script>
-            $(document).ready(function(){
-                $('#cmdAddDevice').on('click', function(e){
-                    alert('Add dev');
-                })
-            });
+
         </script>
         {% end %}
     </head>
@@ -56,14 +52,18 @@
                 <div class="panel panel-primary">
                     <div class="panel-heading"><h3 class="panel-title"><span class="glyphicon glyphicon-cog"></span> Контроллер</h3></div>
                     <div class="panel-body">
-                         <div class="row">
-                            <div class="col-md-3">
-                                <button type="button" class="btn btn-primary"  id = "cmdAddDevice" >Добавить контроллер</button>
+                        <form action="/addsensor" method="post">
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <button type="submit" class="btn btn-primary"  id = "cmdAddDevice" >Добавить контроллер</button>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <input type="text" name="sensor" id="inputName" class="form-control" placeholder="0000000000000001" required autofocus>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-9">
-                                <input type="text" name="name" id="inputName" class="form-control" placeholder="0x00000000000" required autofocus>
-                            </div>
-                         </div>
+                        </form>
                     </div>
                 </div>
             </div>

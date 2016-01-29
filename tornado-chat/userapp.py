@@ -6,6 +6,7 @@ from tornado.options import options
 import tornado.escape
 import base_app
 import hashlib
+import random
 
 class UserApplicatin(base_app.BaseApplication):
     def __init__(self, _cmdmanager, **settings):
@@ -16,6 +17,7 @@ class UserApplicatin(base_app.BaseApplication):
             (r'/messages/?', MessageHandler),
             (r"/login", LoginHandler),
             (r"/create_user", CreateUserHandler),
+            (r"/addsensor", AddSensorHandler),
             (r"/logout", AuthLogoutHandler),
             (r"/cmd/?", CmdHandler),
 
@@ -88,6 +90,56 @@ class CreateUserHandler(BaseHandler):
         except tornado.web.MissingArgumentError:
             self.redirect("/create_user")
             return
+
+
+class AddSensorHandler(BaseHandler):
+    def get(self):
+        pass
+
+    def post(self):
+        try:
+            random.seed()
+            sensor = self.get_argument("sensor")
+            d = 16 - len(sensor)
+            s = "0x"
+            for i in range(0,d):
+                s+="0"
+            s += sensor
+            sensor = s
+
+            k_l = random.randint(0,0xffffffff)
+            k_h = random.randint(0,0xffffffff)
+            K = (k_h << 32) + k_l
+            str = hex(K)
+            keystr = str[2:-1]
+            d = 16 - len(keystr)
+            if d !=0:
+                s = "0x"
+                for i in range(0,d):
+                    s+="0"
+                s += keystr
+            else:
+                s = "0x" + keystr
+            keystr = s
+
+
+            m = hashlib.md5()
+            m.update(keystr)
+            m.update(sensor)
+            md5str = m.hexdigest()
+
+            id = self.application.db_cont.addSensor(sensor, keystr, md5str)
+            print id
+
+            self.application.db_cont.setUserDevice(self.current_user, id)
+            self.redirect("/")
+
+        except:
+            self.redirect("/index")
+
+
+
+
 
 class AuthLogoutHandler(BaseHandler):
     def get(self):
